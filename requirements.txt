@@ -1,0 +1,5 @@
+subprocess
+
+spotdl
+
+ytdlp
