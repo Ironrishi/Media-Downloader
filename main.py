@@ -69,7 +69,7 @@ def spotify(playlist_url, output_folder):
     command = ['spotdl', playlist_url, '--output', f"{output_folder}/%(title)s.%(ext)s"]
     try:
         subprocess.run(command, check=True)
-        print(f"Spotify playlist downloaded to {output_folder}")
+        print(f"Downloaded to {output_folder}")
     except subprocess.CalledProcessError as e:
         print(f"An error occurred during Spotify download: {e}")
 
