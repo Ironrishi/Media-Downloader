@@ -1,3 +1,3 @@
-ytdlp
+yt-dlp
 
 spotdl
