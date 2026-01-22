@@ -90,7 +90,7 @@ Upon execution, the script presents the following options:
 
 ## License Information
 
-This project is distributed under the MIT License.
+This project is distributed under the Apache 2.0 License.
 
 ## Contribution Opportunities
 
