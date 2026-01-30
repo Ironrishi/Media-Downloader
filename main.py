@@ -1,96 +1,99 @@
 import os
-import glob
 import subprocess
 
-# Download video
-def mp4(url, output_path_template=r'C:\Users\hrish\OneDrive\Desktop\%(title)s.%(ext)s'):  # Replace with your desired output folder
-    command = ['yt-dlp', '-f', 'bestvideo+bestaudio/best', '-o', output_path_template, url]
+DOWNLOADS = os.path.join(os.path.expanduser("~"), "Downloads")
+
+def mp4(url):
+    output_template = os.path.join(DOWNLOADS, "%(title)s.%(ext)s")
+    command = [
+        "yt-dlp",
+        "-f", "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+        "--merge-output-format", "mp4",
+
+        "--add-metadata",
+        "--embed-metadata",
+        "--embed-thumbnail",
+        "--embed-chapters",
+
+        "--sub-langs", "all",
+        "--embed-subs",
+
+        "-o", output_template,
+        url
+    ]
     try:
         subprocess.run(command, check=True)
-        print(f"Video downloaded successfully with output template: {output_path_template}")
-
-        # Locate downloaded file
-        search_path = output_path_template.replace('%(title)s', '*').replace('%(ext)s', '*')
-        downloaded_files = glob.glob(search_path)
-        downloaded_files = [f for f in downloaded_files if os.path.isfile(f) and f.lower().endswith(('.mp4', '.webm'))]
-
-        if not downloaded_files:
-            raise FileNotFoundError("Could not locate the downloaded video file.")
-
-        actual_path = downloaded_files[0]
-        print(f"Located downloaded file: {actual_path}")
-
-        # Convert to MP4
-        converted_path = os.path.splitext(actual_path)[0] + '.mp4'
-        convert_video(actual_path, converted_path)
-    except FileNotFoundError as e:
-        print(e)
+        print("Video downloaded")
     except subprocess.CalledProcessError as e:
-        print(f"An error occurred during video download: {e}")
+        print(f"Video download failed: {e}")
+    except FileNotFoundError:
+        print("yt-dlp not found in PATH, install using 'pip install yt-dlp'")
 
-# Convert video using FFmpeg
-def convert_video(input_path, output_path):
-    command = ['ffmpeg', '-i', input_path, output_path]
+def mp3(url):
+    output_template = os.path.join(DOWNLOADS, "%(title)s.%(ext)s")
+    command = [
+        "yt-dlp",
+        "-f", "bestaudio",
+
+        "--extract-audio",
+        "--audio-format", "mp3",
+        "--audio-quality", "0",
+
+        "--add-metadata",
+        "--embed-metadata",
+        "--embed-thumbnail",
+
+        "-o", output_template,
+        url
+    ]
     try:
         subprocess.run(command, check=True)
-        print(f"Video converted successfully and saved to {output_path}")
+        print("Audio downloaded")
     except subprocess.CalledProcessError as e:
-        print(f"An error occurred during video conversion: {e}")
+        print(f"Audio download failed: {e}")
+    except FileNotFoundError:
+        print("yt-dlp not found in PATH, install using 'pip install yt-dlp'")
 
-# Download audio
-def mp3(url, output_path_template=r'C:\Users\hrish\OneDrive\Desktop\%(title)s.%(ext)s'): # Replace with your desired output folder
-    command = ['yt-dlp', '-f', 'bestaudio', '-o', output_path_template, url]
+def spotify(playlist_url):
+    os.makedirs(DOWNLOADS, exist_ok=True)
+    command = [
+        "spotdl",
+        playlist_url,
+
+        "--format", "flac",
+        "--bitrate", "auto",
+
+        "--threads", "4",
+        "--preload",
+
+        "--output", f"{DOWNLOADS}/%(artist)s/%(album)s/%(track-number)02d - %(title)s.%(ext)s"
+    ]
     try:
         subprocess.run(command, check=True)
-        print(f"Audio downloaded successfully with output template: {output_path_template}")
-         # Locate downloaded file
-        search_path = output_path_template.replace('%(title)s', '*').replace('%(ext)s', '*')
-        downloaded_files = glob.glob(search_path)
-        downloaded_files = [f for f in downloaded_files if os.path.isfile(f) and f.lower().endswith(('.webm'))]
-
-        if not downloaded_files:
-            raise FileNotFoundError("Could not locate the downloaded audio file.")
-
-        actual_path = downloaded_files[0]
-        print(f"Located downloaded file: {actual_path}")
-
-        # Convert to MP4
-        converted_path = os.path.splitext(actual_path)[0] + '.mp3'
-        convert_video(actual_path, converted_path)
-    except FileNotFoundError as e:
-        print(e)
+        print("Spotify download complete")
     except subprocess.CalledProcessError as e:
-        print(f"An error occurred during audio download: {e}")
+        print(f"Spotify download failed: {e}")
+    except FileNotFoundError:
+        print("spotdl not found in PATH, install using 'pip install spotdl'")
 
-
-# Download Spotify playlist
-def spotify(playlist_url, output_folder):
-    os.makedirs(output_folder, exist_ok=True)
-    command = ['spotdl', playlist_url, '--output', f"{output_folder}/%(title)s.%(ext)s"]
-    try:
-        subprocess.run(command, check=True)
-        print(f"Downloaded to {output_folder}")
-    except subprocess.CalledProcessError as e:
-        print(f"An error occurred during Spotify download: {e}")
 
 if __name__ == "__main__":
     while True:
-        print("1 for video\n2 for audio\n3 for Spotify\n4 to exit")
-        choice = input("Enter your choice: ").strip()
+        print("\n1. Video")
+        print("2. Audio")
+        print("3. Spotify Playlist")
+        print("4. Exit")
+
+        choice = input("Enter choice: ").strip()
 
         if choice == "1":
-            url = input("Enter the video URL: ").strip()
-            mp4(url)
+            mp4(input("Enter video URL: ").strip())
         elif choice == "2":
-            url = input("Enter the audio URL: ").strip()
-            mp3(url)
+            mp3(input("Enter audio URL: ").strip())
         elif choice == "3":
-            playlist_url = input("Enter the Spotify playlist URL: ").strip()
-            # Replace with your desired output folder
-            output_folder = r"C:\Users\hrish\OneDrive\Desktop" 
-            spotify(playlist_url, output_folder)
+            spotify(input("Enter Spotify playlist URL: ").strip())
         elif choice == "4":
             print("Goodbye!")
             break
         else:
-            print("Invalid choice. Please try again.")
+            print("Invalid choice")
